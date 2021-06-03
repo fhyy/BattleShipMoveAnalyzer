@@ -21,13 +21,18 @@ def readBoard():
     print(boardString)
     print(shipSizeString)
 
-    board = boardString.split(",")
+    board = boardString
     if len(board) != 100:
         print("Board is not correct size (10x10 = 100) != " + str(len(board)))
         exit(1)
 
     for i in range(len(board)):
-        currentBoard.itemset(i,int(board[i]))
+        if board[i] == 'B':
+            currentBoard.itemset(i,1)
+        elif board[i] == 'X':
+            currentBoard.itemset(i,-1)
+        else:
+            currentBoard.itemset(i,0)
 
     for size in shipSizeString.split(","):
         shipSizes.append(int(size))
@@ -89,6 +94,9 @@ async def placeAndCollectNumValidBoatsPerSquare(x, y, horizontal, sizesToPlace, 
 
     return validBoatsPerSquare
 
+def printIndex(index):
+    print(str(index%10) + " - " + str(index//10))
+
 async def main():
     readBoard()
 
@@ -105,6 +113,17 @@ async def main():
         
     filteredResults = results - np.multiply(results, currentBoard)
     printBoard(filteredResults)
+
+    maxIndices = np.argmax(filteredResults)
+
+    print(str(maxIndices))
+
+    if isinstance(maxIndices, list):
+        for index in maxIndices:
+            printIndex(index)
+    else:
+        printIndex(maxIndices)
+            
 
 loop = asyncio.get_event_loop()
 loop.run_until_complete(main())
