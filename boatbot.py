@@ -49,7 +49,43 @@ def printBoard(board):
             else:
                 print(" " + str(val), end = '')
         print('')
+        
+async def placeAndCollectNumValidBoatsPerSquareOnLocation(x, y, sizesToPlace, boardState):
+    L = await asyncio.gather(
+        placeAndCollectNumValidBoatsPerSquare(x, y, True, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquare(x, y, False, sizesToPlace, boardState)
+    )
+    return L[0] + L[1]
 
+async def placeAndCollectNumValidBoatsPerSquarePerY(x, sizesToPlace, boardState):
+    L = await asyncio.gather(
+        placeAndCollectNumValidBoatsPerSquareOnLocation(x, 0, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquareOnLocation(x, 1, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquareOnLocation(x, 2, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquareOnLocation(x, 3, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquareOnLocation(x, 4, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquareOnLocation(x, 5, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquareOnLocation(x, 6, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquareOnLocation(x, 7, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquareOnLocation(x, 8, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquareOnLocation(x, 9, sizesToPlace, boardState)
+    )
+    return L[0] + L[1] + L[2] + L[3] + L[4] + L[5] + L[6] + L[7] + L[8] + L[9]
+        
+async def placeAndCollectNumValidBoatsPerSquarePerX(sizesToPlace, boardState):
+    L = await asyncio.gather(
+        placeAndCollectNumValidBoatsPerSquarePerY(0, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquarePerY(1, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquarePerY(2, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquarePerY(3, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquarePerY(4, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquarePerY(5, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquarePerY(6, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquarePerY(7, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquarePerY(8, sizesToPlace, boardState),
+        placeAndCollectNumValidBoatsPerSquarePerY(9, sizesToPlace, boardState)
+    )
+    return L[0] + L[1] + L[2] + L[3] + L[4] + L[5] + L[6] + L[7] + L[8] + L[9]
 
 async def placeAndCollectNumValidBoatsPerSquare(x, y, horizontal, sizesToPlace, boardState):
     newBoard = boardState.copy()
@@ -84,15 +120,12 @@ async def placeAndCollectNumValidBoatsPerSquare(x, y, horizontal, sizesToPlace, 
     if not couldPlace:
         return validBoatsPerSquare
     
-    for nextX in range(10):
-        for nextY in range(10):
-            L = await asyncio.gather(
-                placeAndCollectNumValidBoatsPerSquare(nextX, nextY, True, sizesToPlace[1:], newBoard),
-                placeAndCollectNumValidBoatsPerSquare(nextX, nextY, False, sizesToPlace[1:], newBoard)
-            )
-            validBoatsPerSquare = validBoatsPerSquare + L[0] + L[1]
-
-    return validBoatsPerSquare
+    if len(sizesToPlace) == 1:
+        if 1 in newBoard:
+            return validBoatsPerSquare
+        return np.clip(newBoard, 0, 1)
+    
+    return await placeAndCollectNumValidBoatsPerSquarePerX(sizesToPlace[1:], newBoard)
 
 def printIndex(index):
     print(str(index%10) + " - " + str(index//10))
